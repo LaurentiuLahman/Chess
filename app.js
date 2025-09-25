@@ -90,10 +90,14 @@ function dragDrop(e) {
     }
 
     if (valid) {
-        targetSquare.appendChild(draggedPiece);
-        if (draggedPiece.id === 'pawn') draggedPiece.dataset.hasMoved = true;
-        changePlayer();
+            targetSquare.appendChild(draggedPiece);
+        if (draggedPiece.id === 'pawn') {
+            draggedPiece.dataset.hasMoved = true;
+            const targetRow = Math.floor(targetSquare.getAttribute('square-id') / width);
+            checkPawnPromotion(draggedPiece, targetRow);
     }
+    changePlayer();
+}
 }
 
 function changePlayer() {
@@ -184,3 +188,45 @@ function isPathClear(startId, targetId) {
 
     return true;
 }
+
+//Pawn Promotion
+
+function checkPawnPromotion(pawn, targetRow) {
+    const isWhite = pawn.classList.contains('white-piece');
+
+    if ((isWhite && targetRow === 0) || (!isWhite && targetRow === 7)) {
+        const promotion = prompt('Promote pawn to (queen/rook/bishop/knight):', 'queen');
+        let newPieceHTML = '';
+
+        switch (promotion?.toLowerCase()) {
+            case 'queen':
+                newPieceHTML = queen;
+                break;
+            case 'rook':
+                newPieceHTML = rook;
+                break;
+            case 'bishop':
+                newPieceHTML = bishop;
+                break;
+            case 'knight':
+                newPieceHTML = knight;
+                break;
+            default:
+                newPieceHTML = queen;
+        }
+
+        // Replace the pawn with the new piece
+        const parentSquare = pawn.parentNode;
+        parentSquare.innerHTML = newPieceHTML;
+
+        // Add the correct classes for color
+        const newPiece = parentSquare.querySelector('.piece');
+        if (isWhite) newPiece.classList.add('white-piece');
+        else newPiece.classList.add('black-piece');
+
+        // Make the new piece draggable
+        newPiece.setAttribute('draggable', true);
+        newPiece.addEventListener('dragstart', dragStart);
+    }
+}
+
